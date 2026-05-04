@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% block title %}{{ dest.name }}{% endblock %}
+{% block content %}
+
+<div class="detail-hero" style="background-image: linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.55) 100%), url('{{ dest.image }}');">
+    <a href="{{ url_for('explore') }}" class="back">← Back to all destinations</a>
+    <div class="detail-hero-info">
+        <span class="chip">{{ dest.category }}</span>
+        <h1>{{ dest.name }}</h1>
+        <div class="hero-meta">
+            <span>📍 {{ dest.state }}</span>
+            <span>★ {{ dest.rating }} ({{ dest.reviews }} reviews)</span>
+            <span>🛡️ {{ dest.safety_level }}</span>
+        </div>
+    </div>
+</div>
+
+<div class="detail-grid">
+    <div>
+        <div class="card">
+            <p style="margin:0 0 14px; color:var(--ink-700); line-height:1.7; font-size:15px;">{{ dest.description }}</p>
+
+            <div class="facts">
+                <div class="fact"><div class="k">Best Time</div><div class="v">{{ dest.best_time }}</div></div>
+                <div class="fact"><div class="k">Safety</div><div class="v">{{ dest.safety_level }}</div></div>
+                <div class="fact"><div class="k">Ideal For</div><div class="v">{{ dest.ideal_for }}</div></div>
+                <div class="fact"><div class="k">Avg Budget</div><div class="v">{{ dest.avg_budget }}</div></div>
+            </div>
+
+            <div class="tip-box">
+                <h4>💡 Tips for Solo Girls</h4>
+                <p>{{ dest.tips }}</p>
+            </div>
+
+            <div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;">
+                <a href="{{ url_for('itinerary') }}" class="btn btn-primary">+ Add to Itinerary</a>
+                <form method="post" action="{{ url_for('saved') }}" style="display:inline-flex;">
+                    <input type="hidden" name="action" value="toggle"/>
+                    <input type="hidden" name="dest_id" value="{{ dest.id }}"/>
+                    <button type="submit" class="btn btn-outline">
+                        {% if dest.id in current_user.saved %}♥ Saved{% else %}♡ Save{% endif %}
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card reviews-card">
+            <div class="reviews-header">
+                <div>
+                    <h3 style="margin:0;">Real Traveller Reviews</h3>
+                    <div class="reviews-source">
+                        {% if reviews.live %}
+                            🔴 Live from <strong>{{ reviews.source }}</strong>
+                        {% else %}
+                            From the <strong>{{ reviews.source }}</strong>
+                        {% endif %}
+                        {% if reviews.place_rating %}
+                            · ★ {{ reviews.place_rating }} ({{ reviews.place_total or '—' }} ratings)
+                        {% endif %}
+                    </div>
+                </div>
+                {% if reviews.place_url %}
+                    <a class="btn btn-outline btn-sm" href="{{ reviews.place_url }}" target="_blank" rel="noopener">View on Google ↗</a>
+                {% endif %}
+            </div>
+
+            <div class="reviews-list">
+                {% for r in reviews['items'] %}
+                <div class="review-item">
+                    <div class="review-avatar">{{ r.avatar }}</div>
+                    <div class="review-body">
+                        <div class="review-top">
+                            <strong>{{ r.author }}</strong>
+                            <span class="review-stars">{% for i in range(r.rating|int) %}★{% endfor %}{% for i in range(5 - (r.rating|int)) %}<span style="color:#ddd;">★</span>{% endfor %}</span>
+                            <span class="review-time">· {{ r.time }}</span>
+                        </div>
+                        <p>{{ r.text }}</p>
+                        <span class="review-tag">{{ r.source }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <div class="card nearby-card">
+            <h4>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#7c3aed"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h2v2H9zm4 0h2v2h-2zM9 13h2v2H9zm4 0h2v2h-2z"/></svg>
+                Girl-Friendly Hotels & Stays
+            </h4>
+            <ul class="nearby-list">
+                {% for h in dest.nearby.hotels %}
+                <li>
+                    <span class="label">
+                        {{ h.name }}
+                        <small>★ {{ h.rating }} · {{ h.distance }}</small>
+                        <span class="mini-tag">{{ h.tag }}</span>
+                    </span>
+                    <a class="phone" href="tel:{{ h.phone|replace(' ','') }}">📞 Book</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="card nearby-card">
+            <h4>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#c2274b"><path d="M19 14a7 7 0 1 0-14 0c0 5.5 7 10 7 10s7-4.5 7-10z"/><path d="M9 11h2v2H9zm4 0h2v2h-2zM11 9h2v2h-2z"/></svg>
+                Hospitals near hotel
+            </h4>
+            <ul class="nearby-list">
+                {% for h in dest.nearby.hospitals %}
+                <li>
+                    <span class="label">{{ h.name }}<small>{{ h.distance }}</small></span>
+                    <a class="phone" href="tel:{{ h.phone|replace(' ','') }}">📞 {{ h.phone }}</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="card nearby-card">
+            <h4>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#1565d8"><path d="M12 2 4 5v6c0 5 3.6 9.5 8 11 4.4-1.5 8-6 8-11V5l-8-3z"/></svg>
+                Police Stations near hotel
+            </h4>
+            <ul class="nearby-list">
+                {% for p in dest.nearby.police %}
+                <li>
+                    <span class="label">{{ p.name }}<small>{{ p.distance }}</small></span>
+                    <a class="phone" href="tel:{{ p.phone|replace(' ','') }}">📞 {{ p.phone }}</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="card nearby-card">
+            <h4>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#21a861"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>
+                Rescue & Helplines
+            </h4>
+            <ul class="nearby-list">
+                {% for r in dest.nearby.rescue %}
+                <li>
+                    <span class="label">{{ r.name }}<small>{{ r.distance }}</small></span>
+                    <a class="phone" href="tel:{{ r.phone|replace(' ','') }}">📞 {{ r.phone }}</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

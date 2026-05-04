@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block title %}Plan Trip{% endblock %}
+{% block content %}
+<div class="section-title" style="margin-top:0">
+    <h2>My Itinerary</h2>
+    {% if selected %}
+    <a href="{{ url_for('itinerary') }}" class="btn btn-outline btn-sm">+ New Trip</a>
+    {% endif %}
+</div>
+
+{% if not trips %}
+<div class="card" style="margin-bottom:18px;">
+    <h3 class="card-title">Create your first trip</h3>
+    <form method="post" action="{{ url_for('itinerary') }}">
+        <input type="hidden" name="action" value="create"/>
+        <div class="row">
+            <div class="field"><label>Trip name</label><input type="text" name="trip_name" placeholder="Goa Trip" required/></div>
+            <div class="field">
+                <label>Destination</label>
+                <select name="destination">
+                    {% for d in destinations %}
+                    <option value="{{ d.name }}">{{ d.name }} — {{ d.state }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="row">
+            <div class="field"><label>Start date</label><input type="date" name="start_date" required/></div>
+            <div class="field"><label>End date</label><input type="date" name="end_date" required/></div>
+            <div class="field"><label>Estimated budget (₹)</label><input type="number" name="budget" min="0" placeholder="15000"/></div>
+        </div>
+        <button class="btn btn-primary" type="submit">Create Trip</button>
+    </form>
+</div>
+{% else %}
+
+<div class="itinerary-layout">
+    <aside class="card">
+        <h3 class="card-title">My Trips</h3>
+        <div class="day-list">
+            {% for t in trips %}
+            <a class="day-pill {% if selected and t.id==selected.id %}active{% endif %}"
+               href="{{ url_for('itinerary', trip=t.id) }}" style="text-decoration:none">
+                <h4>{{ t.name }}</h4>
+                <div class="meta">{{ t.start_date }} → {{ t.end_date }}
+                    {% if t.status=='completed' %} · ✓ done{% endif %}
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        <hr style="border:0;border-top:1px solid var(--line);margin:16px 0">
+        <h4 style="font-size:13px;color:var(--ink-500);text-transform:uppercase;letter-spacing:.06em;margin:0 0 10px;">Add New Trip</h4>
+        <form method="post" action="{{ url_for('itinerary') }}">
+            <input type="hidden" name="action" value="create"/>
+            <div class="field"><label>Name</label><input type="text" name="trip_name" required/></div>
+            <div class="field">
+                <label>Destination</label>
+                <select name="destination">
+                    {% for d in destinations %}
+                    <option value="{{ d.name }}">{{ d.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="field"><label>Start</label><input type="date" name="start_date" required/></div>
+            <div class="field"><label>End</label><input type="date" name="end_date" required/></div>
+            <div class="field"><label>Budget (₹)</label><input type="number" name="budget" min="0"/></div>
+            <button class="btn btn-primary btn-block" type="submit">+ Add Trip</button>
+        </form>
+    </aside>
+
+    <div>
+        <div class="card" style="margin-bottom:18px">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+                <div>
+                    <h3 style="margin:0">{{ selected.name }}</h3>
+                    <div style="color:var(--ink-500);font-size:13px;">{{ selected.destination }} · {{ selected.start_date }} → {{ selected.end_date }} · ₹{{ '{:,}'.format(selected.budget) }}</div>
+                </div>
+                <div style="display:flex;gap:8px;">
+                    {% if selected.status != 'completed' %}
+                    <form method="post" action="{{ url_for('itinerary') }}" style="display:inline">
+                        <input type="hidden" name="action" value="complete"/>
+                        <input type="hidden" name="trip_id" value="{{ selected.id }}"/>
+                        <button class="btn btn-secondary btn-sm">Mark Completed</button>
+                    </form>
+                    {% else %}
+                    <span class="badge green">Completed</span>
+                    {% endif %}
+                    <form method="post" action="{{ url_for('itinerary') }}" style="display:inline" onsubmit="return confirm('Delete this trip?')">
+                        <input type="hidden" name="action" value="delete"/>
+                        <input type="hidden" name="trip_id" value="{{ selected.id }}"/>
+                        <button class="btn btn-danger btn-sm">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-bottom:18px">
+            <h4 style="margin:0 0 10px;">Add a day</h4>
+            <form method="post" action="{{ url_for('itinerary') }}" class="row">
+                <input type="hidden" name="action" value="add_day"/>
+                <input type="hidden" name="trip_id" value="{{ selected.id }}"/>
+                <div class="field"><label>Date</label><input type="date" name="date" required/></div>
+                <button class="btn btn-primary" type="submit">+ Add Day</button>
+            </form>
+        </div>
+
+        {% if not selected.days %}
+            <div class="empty">
+                <h3>No days planned yet</h3>
+                Add a day above and start filling in activities.
+            </div>
+        {% else %}
+            {% for day in selected.days %}
+            <div class="card" style="margin-bottom:18px">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <h3 style="margin:0">Day {{ day.day }} <span style="color:var(--ink-500);font-weight:400;font-size:14px;">— {{ day.date }}</span></h3>
+                </div>
+                <div style="margin:14px 0 6px;">
+                    {% for a in day.activities %}
+                    <div class="activity-row">
+                        <div class="activity-time">{{ a.time }}</div>
+                        <div>
+                            <div class="activity-title">{{ a.title }}</div>
+                            {% if a.note %}<div class="activity-note">{{ a.note }}</div>{% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <form method="post" action="{{ url_for('itinerary') }}" class="row" style="margin-top:8px">
+                    <input type="hidden" name="action" value="add_activity"/>
+                    <input type="hidden" name="trip_id" value="{{ selected.id }}"/>
+                    <input type="hidden" name="day_no" value="{{ day.day }}"/>
+                    <div class="field" style="max-width:120px"><label>Time</label><input type="time" name="time" required/></div>
+                    <div class="field"><label>Activity</label><input type="text" name="title" placeholder="Visit Baga Beach" required/></div>
+                    <div class="field"><label>Note</label><input type="text" name="note" placeholder="Optional"/></div>
+                    <button class="btn btn-primary" type="submit">+ Add</button>
+                </form>
+            </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

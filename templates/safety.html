@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Safety Tips{% endblock %}
+{% block content %}
+<div class="section-title" style="margin-top:0">
+    <h2>Safety Tips for Solo Girls</h2>
+    <span style="color:var(--ink-500);font-size:13px;">Keep these tips in mind and travel worry-free</span>
+</div>
+
+<div class="tips-grid">
+    {% for t in tips %}
+    <div class="tip-card">
+        <div class="icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 4 5v6c0 5 3.6 9.5 8 11 4.4-1.5 8-6 8-11V5l-8-3z"/></svg>
+        </div>
+        <h4>{{ t.title }}</h4>
+        <p>{{ t.text }}</p>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="encourage">
+    💜 You are strong, independent and capable. Enjoy your journey!
+</div>
+{% endblock %}

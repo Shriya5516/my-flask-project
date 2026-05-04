@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<section class="hero">
+    <div>
+        <h1>Hi, {{ current_user.name.split()[0] }}! 👋</h1>
+        <p>Where do you want to go today? Let's plan your next safe solo adventure.</p>
+        <form class="hero-search" method="get" action="{{ url_for('explore') }}">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#fff"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            <input name="q" placeholder="Search destinations, things to do…" />
+            <button type="submit">Search</button>
+        </form>
+    </div>
+    <div class="hero-illustration"
+         style="background-image: url('{{ url_for('static', filename='images/destinations/home_hero.jpg') }}');">
+    </div>
+</section>
+
+<div class="quick-grid">
+    <div class="quick-card">
+        <div class="quick-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 4 5v6c0 5 3.6 9.5 8 11 4.4-1.5 8-6 8-11V5l-8-3z"/></svg></div>
+        <div>
+            <h3>Safe Places</h3>
+            <p>Explore verified safe destinations rated by solo female travellers.</p>
+            <a href="{{ url_for('explore') }}">View Places →</a>
+        </div>
+    </div>
+    <div class="quick-card">
+        <div class="quick-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 12h13M5 18h16"/></svg></div>
+        <div>
+            <h3>Plan My Trip</h3>
+            <p>Create a day-wise itinerary and organise your trip in minutes.</p>
+            <a href="{{ url_for('itinerary') }}">Plan Now →</a>
+        </div>
+    </div>
+    <div class="quick-card">
+        <div class="quick-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M5 9h14M5 15h14"/></svg></div>
+        <div>
+            <h3>Budget</h3>
+            <p>Decide and track every rupee of your trip — daily and total.</p>
+            <a href="{{ url_for('budget') }}">Open →</a>
+        </div>
+    </div>
+    <div class="quick-card">
+        <div class="quick-icon" style="background:#ffe1e1;color:#c2274b"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg></div>
+        <div>
+            <h3>Emergency</h3>
+            <p>Quick access to helplines, hospitals and rescue teams.</p>
+            <a href="{{ url_for('emergency') }}">Open →</a>
+        </div>
+    </div>
+</div>
+
+<div class="stat-row">
+    <div class="stat">
+        <div class="num">{{ completed_count }}</div>
+        <div class="label">Trips Completed</div>
+    </div>
+    <div class="stat">
+        <div class="num">{{ planned_count }}</div>
+        <div class="label">Upcoming Trips</div>
+    </div>
+    <div class="stat">
+        <div class="num">₹ {{ '{:,}'.format(total_budget) }}</div>
+        <div class="label">Total Budget Planned</div>
+    </div>
+</div>
+
+<div class="section-title">
+    <h2>Popular Safe Destinations</h2>
+    <a href="{{ url_for('explore') }}">View all →</a>
+</div>
+<div class="dest-grid compact">
+    {% for d in popular %}
+    <a href="{{ url_for('destination_detail', dest_id=d.id) }}" class="dest-card">
+        <div class="dest-thumb"><img src="{{ d.image }}" alt="{{ d.name }}" loading="lazy"/></div>
+        <div class="dest-body">
+            <div class="dest-name">{{ d.name }}</div>
+            <div class="dest-rating">
+                ★ {{ d.rating }} <span style="color:var(--ink-500);font-weight:400;">({{ d.reviews }})</span>
+            </div>
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% endblock %}

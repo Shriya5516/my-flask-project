@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Safe Destinations{% endblock %}
+{% block content %}
+<div class="section-title" style="margin-top:0">
+    <h2>Safe Destinations</h2>
+    <span style="color:var(--ink-500);font-size:13px;">{{ destinations|length }} verified places</span>
+</div>
+
+<div class="filter-layout">
+    <aside class="card filter-card">
+        <div class="filter-group">
+            <h4>Categories</h4>
+            <div class="filter-options">
+                {% for c in categories %}
+                <a href="{{ url_for('explore', category=c, rating=active_rating) }}"
+                   class="{% if c == active_category %}active{% endif %}">
+                   {% if c == 'All' %}All Destinations{% else %}{{ c }}{% endif %}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="filter-group">
+            <h4>Safety Rating</h4>
+            <div class="filter-options">
+                {% for r in rating_options %}
+                <a href="{{ url_for('explore', category=active_category, rating=r) }}"
+                   class="{% if r == active_rating %}active{% endif %}">
+                   {% if r == 'All' %}Any rating{% else %}{{ r }} & above{% endif %}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="filter-group">
+            <h4>Travel Style</h4>
+            <div class="filter-options">
+                <a class="active">Solo</a>
+                <a>Backpacking</a>
+                <a>Wellness</a>
+                <a>Adventure</a>
+            </div>
+        </div>
+    </aside>
+
+    <div>
+        {% if destinations %}
+        <div class="dest-grid">
+            {% for d in destinations %}
+            <a href="{{ url_for('destination_detail', dest_id=d.id) }}" class="dest-card">
+                <div class="dest-thumb">
+                    <img src="{{ d.image }}" alt="{{ d.name }}" loading="lazy"/>
+                    <form method="post" action="{{ url_for('saved') }}" onclick="event.stopPropagation()" onsubmit="event.stopPropagation()">
+                        <input type="hidden" name="action" value="toggle"/>
+                        <input type="hidden" name="dest_id" value="{{ d.id }}"/>
+                        <button type="submit" class="heart-btn {% if d.id in current_user.saved %}active{% endif %}" title="Save">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="{% if d.id in current_user.saved %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 1 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+                        </button>
+                    </form>
+                </div>
+                <div class="dest-body">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                        <div class="dest-name">{{ d.name }}</div>
+                        <div class="dest-rating">★ {{ d.rating }}</div>
+                    </div>
+                    <div class="dest-meta">{{ d.category }} · {{ d.state }}</div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty">
+            <h3>No destinations match these filters</h3>
+            Try clearing filters or choosing a different category.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
